@@ -1,0 +1,29 @@
+name: 日次リサーチ自動実行
+
+on:
+  schedule:
+    - cron: "0 23 * * *"  # 毎朝8時JST（UTC 23時）
+  workflow_dispatch:       # 手動実行も可能
+
+jobs:
+  daily-research:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 依存関係インストール
+        run: pip install -r requirements.txt
+
+      - name: 日次リサーチ実行
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_RESEARCH_DB_ID: ${{ secrets.NOTION_RESEARCH_DB_ID }}
+          BRAVE_SEARCH_API_KEY: ${{ secrets.BRAVE_SEARCH_API_KEY }}
+        run: |
+          python main.py research --query "AIコンサル 中小企業 導入事例"
+          python main.py research --query "業務自動化 RPA AI 最新動向"

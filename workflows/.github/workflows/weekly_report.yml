@@ -1,0 +1,29 @@
+name: 週次レポート自動生成
+
+on:
+  schedule:
+    - cron: "0 22 * * 0"  # 毎週月曜7時JST（UTC日曜22時）
+  workflow_dispatch:
+
+jobs:
+  weekly-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 依存関係インストール
+        run: pip install -r requirements.txt
+
+      - name: 週次コンテンツ案を生成
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_RESEARCH_DB_ID: ${{ secrets.NOTION_RESEARCH_DB_ID }}
+          BRAVE_SEARCH_API_KEY: ${{ secrets.BRAVE_SEARCH_API_KEY }}
+        run: |
+          python main.py research --query "今週のAI・DXニュース 中小企業向け"
+          python main.py content --type threads --topic "今週のAI活用Tip"
