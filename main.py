@@ -35,7 +35,7 @@ def main():
     # content: コンテンツ生成
     content_parser = subparsers.add_parser("content", help="コンテンツ生成")
     content_parser.add_argument(
-        "--type", required=True, choices=["note", "threads", "proposal", "email"],
+        "--type", required=True, choices=["note", "threads", "x", "proposal", "email"],
         dest="content_type", help="コンテンツの種類"
     )
     content_parser.add_argument("--topic", required=True, help="テーマ")
