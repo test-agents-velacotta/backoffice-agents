@@ -40,6 +40,10 @@ def main():
     )
     content_parser.add_argument("--topic", required=True, help="テーマ")
     content_parser.add_argument("--context", default="", help="追加コンテキスト")
+    content_parser.add_argument(
+        "--provider", default="claude", choices=["claude", "openai"],
+        help="使用するAIプロバイダー（デフォルト: claude）"
+    )
 
     # invoice: 請求書生成
     invoice_parser = subparsers.add_parser("invoice", help="請求書PDF生成")
@@ -60,7 +64,7 @@ def main():
 
     elif args.command == "content":
         from agents.content_agent import run
-        print(run(client, args.content_type, args.topic, args.context))
+        print(run(client, args.content_type, args.topic, args.context, args.provider))
 
     elif args.command == "invoice":
         from agents.admin_agent import run_invoice
