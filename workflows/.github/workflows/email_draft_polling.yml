@@ -1,0 +1,34 @@
+name: メール返信ドラフト自動作成（要セットアップ）
+
+# 初期状態では手動実行のみ。GMAIL_TOKEN_JSON 等のSecretsを設定し、
+# 動作確認ができたら schedule のコメントアウトを外して定期実行を有効化してください。
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: "*/10 * * * *"  # 10分おき
+
+jobs:
+  email-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 依存関係インストール
+        run: pip install -r requirements.txt
+
+      - name: Gmail認証トークンを復元
+        env:
+          GMAIL_TOKEN_JSON: ${{ secrets.GMAIL_TOKEN_JSON }}
+        run: echo "$GMAIL_TOKEN_JSON" > token.json
+
+      - name: 新着メールに返信ドラフトを作成
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_TOKEN_PATH: token.json
+          GMAIL_ALLOWED_SENDERS: ${{ secrets.GMAIL_ALLOWED_SENDERS }}
+          GMAIL_LABEL: ${{ secrets.GMAIL_LABEL }}
+        run: python main.py email draft

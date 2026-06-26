@@ -16,8 +16,7 @@ def save_research(title: str, content: str, source_urls: list[str] = None) -> st
     filename = f"{today} {safe_title}.md"
     filepath = RESEARCH_DIR / filename
 
-    urls_section = "
-".join(f"- {u}" for u in (source_urls or []))
+    urls_section = "\n".join(f"- {u}" for u in (source_urls or []))
     md = f"""---
 title: "{title}"
 date: {today}
