@@ -1,7 +1,6 @@
 """エージェント動作確認テスト（モック使用）"""
 
 import json
-import os
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -43,73 +42,6 @@ class TestContentAgent(unittest.TestCase):
         client = MagicMock()
         with self.assertRaises(ValueError):
             run(client, "invalid_type", "テスト")
-
-
-class TestEmailAgent(unittest.TestCase):
-    def setUp(self):
-        os.environ.pop("GMAIL_ALLOWED_SENDERS", None)
-        os.environ.pop("GMAIL_LABEL", None)
-
-    def test_requires_sender_or_label_filter(self):
-        from agents.email_agent import run
-        result = run(MagicMock(), label=None, senders=None)
-        self.assertIn("絞り込み", result)
-
-    @patch("agents.email_agent.gmail_client")
-    def test_dry_run_does_not_create_draft(self, mock_gmail):
-        from agents.email_agent import run
-
-        mock_gmail.build_query.return_value = "is:unread from:(a@example.com)"
-        mock_gmail.list_unread_messages.return_value = [{"id": "msg1"}]
-        mock_gmail.get_message.return_value = {
-            "id": "msg1",
-            "thread_id": "t1",
-            "sender": "a@example.com",
-            "subject": "テスト件名",
-            "body": "本文テスト",
-            "message_id_header": "<abc@example.com>",
-            "references": "",
-        }
-
-        client = MagicMock()
-        msg = MagicMock()
-        msg.content = [MagicMock(text="返信文のドラフトです")]
-        client.messages.create.return_value = msg
-
-        result = run(client, senders=["a@example.com"], dry_run=True)
-
-        self.assertIn("DRY RUN", result)
-        mock_gmail.create_draft_reply.assert_not_called()
-
-    @patch("agents.email_agent._save_processed")
-    @patch("agents.email_agent._load_processed", return_value=set())
-    @patch("agents.email_agent.gmail_client")
-    def test_creates_draft_and_records_processed_id(self, mock_gmail, mock_load, mock_save):
-        from agents.email_agent import run
-
-        mock_gmail.build_query.return_value = "is:unread from:(a@example.com)"
-        mock_gmail.list_unread_messages.return_value = [{"id": "msg1"}]
-        mock_gmail.get_message.return_value = {
-            "id": "msg1",
-            "thread_id": "t1",
-            "sender": "a@example.com",
-            "subject": "テスト件名",
-            "body": "本文テスト",
-            "message_id_header": "<abc@example.com>",
-            "references": "",
-        }
-        mock_gmail.create_draft_reply.return_value = {"id": "draft1"}
-
-        client = MagicMock()
-        msg = MagicMock()
-        msg.content = [MagicMock(text="返信文のドラフトです")]
-        client.messages.create.return_value = msg
-
-        result = run(client, senders=["a@example.com"], dry_run=False)
-
-        mock_gmail.create_draft_reply.assert_called_once()
-        mock_save.assert_called_once_with({"msg1"})
-        self.assertIn("draft1", result)
 
 
 class TestInvoiceGenerator(unittest.TestCase):

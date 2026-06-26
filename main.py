@@ -53,18 +53,6 @@ def main():
     invoice_parser.add_argument("--desc", required=True, dest="description", help="業務内容")
     invoice_parser.add_argument("--number", default=None, dest="invoice_number", help="請求番号")
 
-    # email: 新着メールへの返信ドラフト作成（Gmail下書きのみ、自動送信はしない）
-    email_parser = subparsers.add_parser("email", help="新着メールに返信ドラフトを作成（Gmail）")
-    email_parser.add_argument("action", choices=["draft"], help="実行アクション")
-    email_parser.add_argument("--label", default=None, help="対象とするGmailラベル")
-    email_parser.add_argument(
-        "--senders", default=None, help="対象とする送信者メールアドレス（カンマ区切り）"
-    )
-    email_parser.add_argument("--max", type=int, default=10, dest="max_results", help="処理する最大件数")
-    email_parser.add_argument(
-        "--dry-run", action="store_true", help="Gmailに下書きを作成せず、生成内容のみ表示する"
-    )
-
     args = parser.parse_args()
 
     if args.command == "ask":
@@ -82,11 +70,6 @@ def main():
     elif args.command == "invoice":
         from agents.admin_agent import run_invoice
         print(run_invoice(args.client_name, args.amount, args.description, args.invoice_number))
-
-    elif args.command == "email":
-        from agents.email_agent import run as run_email
-        senders = [s.strip() for s in args.senders.split(",")] if args.senders else None
-        print(run_email(client, label=args.label, senders=senders, max_results=args.max_results, dry_run=args.dry_run))
 
     else:
         parser.print_help()
