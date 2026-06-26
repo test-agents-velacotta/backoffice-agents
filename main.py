@@ -31,6 +31,7 @@ def main():
     research_parser = subparsers.add_parser("research", help="Web検索＋リサーチ")
     research_parser.add_argument("--query", required=True, help="検索クエリ")
     research_parser.add_argument("--no-notion", action="store_true", help="Notionに保存しない")
+    research_parser.add_argument("--no-obsidian", action="store_true", help="Obsidianに保存しない")
 
     # content: コンテンツ生成
     content_parser = subparsers.add_parser("content", help="コンテンツ生成")
@@ -60,7 +61,7 @@ def main():
 
     elif args.command == "research":
         from agents.research_agent import run
-        print(run(client, args.query, save_to_notion=not args.no_notion))
+        print(run(client, args.query, save_to_notion=not args.no_notion, save_to_obsidian=not args.no_obsidian))
 
     elif args.command == "content":
         from agents.content_agent import run
